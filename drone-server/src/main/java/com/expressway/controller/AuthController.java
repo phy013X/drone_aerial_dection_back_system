@@ -1,10 +1,10 @@
 package com.expressway.controller;
 
-import com.expressway.constant.AuthConstant;
-import com.expressway.dto.LoginDTO;
+import com.expressway.dto.UserLoginDTO;
+import com.expressway.dto.UserRegisterDTO;
+import com.expressway.entity.User;
 import com.expressway.result.Result;
-import com.expressway.service.SysUserService;
-import com.expressway.vo.LogoutResponseVO;
+import com.expressway.service.UserService;
 import com.expressway.vo.UserLoginVO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -12,36 +12,62 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 登录登出认证接口
+ * 认证相关控制器
  */
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @Slf4j
 public class AuthController {
 
     @Resource
-    private SysUserService sysUserService;
+    private UserService userService;
 
     /**
-     * 登录接口（POST请求，接收JSON参数）
+     * 用户登录
      */
     @PostMapping("/login")
-    public Result<UserLoginVO> login(@Validated @RequestBody LoginDTO loginDTO) {
-        log.info("员工登录：{}", loginDTO);
-        UserLoginVO loginResponseVO = sysUserService.login(loginDTO);
+    public Result<UserLoginVO> login(@Validated @RequestBody UserLoginDTO loginDTO) {
+        log.info("用户登录：{}", loginDTO);
+        UserLoginVO loginResponseVO = userService.login(loginDTO);
         return Result.success(loginResponseVO);
     }
 
     /**
-     * 登出接口（GET请求，从请求头获取令牌）
+     * 用户注册
      */
-    @GetMapping("/logout")
-    public Result<LogoutResponseVO> logout(@RequestHeader(AuthConstant.TOKEN_HEADER) String token) {
-        // 处理令牌前缀（前端传入格式：Bearer xxx）
-        if (token.startsWith(AuthConstant.TOKEN_PREFIX)) {
-            token = token.substring(AuthConstant.TOKEN_PREFIX.length());
+    @PostMapping("/register")
+    public Result<?> register(@Validated @RequestBody UserRegisterDTO registerDTO) {
+        log.info("用户注册：{}", registerDTO);
+        userService.register(registerDTO);
+        return Result.success("注册成功");
+    }
+
+    /**
+     * 获取当前用户信息
+     */
+    @GetMapping("/user")
+    public Result<?> getUserInfo() {
+        // 从上下文获取用户ID
+        Long userId = com.expressway.context.BaseContext.getCurrentId();
+        if (userId == null) {
+            return Result.error("未登录");
         }
-        LogoutResponseVO logoutResponseVO = sysUserService.logout(token);
-        return Result.success(logoutResponseVO);
+        return Result.success(userService.selectById(userId));
+    }
+
+    /**
+     * 更新用户信息
+     */
+    @PutMapping("/user")
+    public Result<?> updateUserInfo(@RequestBody User user) {
+        // 从上下文获取用户ID
+        Long userId = com.expressway.context.BaseContext.getCurrentId();
+        if (userId == null) {
+            return Result.error("未登录");
+        }
+        user.setId(userId);
+        // 更新用户信息
+        userService.update(user);
+        return Result.success("更新成功");
     }
 }

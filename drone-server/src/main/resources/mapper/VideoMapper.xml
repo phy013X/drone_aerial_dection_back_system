@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.expressway.mapper.VideoMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.expressway.entity.Video" >
+        <id column="id" property="id" />
+        <result column="device_id" property="deviceId" />
+        <result column="file_name" property="fileName" />
+        <result column="file_path" property="filePath" />
+        <result column="file_type" property="fileType" />
+        <result column="file_size" property="fileSize" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="duration" property="duration" />
+        <result column="resolution" property="resolution" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+
+    <!-- 关联查询结果映射 -->
+    <resultMap id="VideoWithDeviceResultMap" type="com.expressway.entity.Video" extends="BaseResultMap">
+        <result column="device_name" property="deviceName" />
+    </resultMap>
+
+    <!-- 创建视频记录 -->
+    <insert id="createVideo">
+        insert into video (device_id, file_name, file_path, file_type, file_size, start_time, end_time, duration, resolution, status, create_time)
+        values (#{deviceId}, #{fileName}, #{filePath}, #{fileType}, #{fileSize}, #{startTime}, #{endTime}, #{duration}, #{resolution}, 1, now())
+    </insert>
+
+    <!-- 获取视频列表 -->
+    <select id="getVideoList" resultMap="VideoWithDeviceResultMap">
+        select v.*, de.name as device_name from video v
+        left join device de on v.device_id = de.id
+        <where>
+            <if test="deviceId != null">
+                and v.device_id = #{deviceId}
+            </if>
+            <if test="startTime != null">
+                and v.start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and v.end_time &lt;= #{endTime}
+            </if>
+        </where>
+        order by v.start_time desc
+        limit #{page}, #{size}
+    </select>
+
+    <!-- 获取视频总数 -->
+    <select id="getVideoCount" resultType="java.lang.Integer">
+        select count(*) from video
+        <where>
+            <if test="deviceId != null">
+                and device_id = #{deviceId}
+            </if>
+            <if test="startTime != null">
+                and start_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and end_time &lt;= #{endTime}
+            </if>
+        </where>
+    </select>
+
+    <!-- 获取视频详情 -->
+    <select id="getVideoById" resultMap="VideoWithDeviceResultMap">
+        select v.*, de.name as device_name from video v
+        left join device de on v.device_id = de.id
+        where v.id = #{id}
+    </select>
+
+    <!-- 更新视频状态 -->
+    <update id="updateVideoStatus">
+        update video set
+            status = #{status}
+        where id = #{id}
+    </update>
+
+    <!-- 删除视频 -->
+    <delete id="deleteVideo">
+        delete from video where id = #{id}
+    </delete>
+</mapper>

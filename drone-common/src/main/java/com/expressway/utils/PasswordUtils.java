@@ -30,13 +30,13 @@ public class PasswordUtils {
             return false;
         }
         try {
-            String[] parts = dbEncryptPwd.split(":", 2); // 限制拆分次数，避免盐值含 ":"（极端情况）
+            dbEncryptPwd = dbEncryptPwd.trim();
+            String[] parts = dbEncryptPwd.split(":", 2);
             if (parts.length != 2) {
                 return false;
             }
             String dbPwd = parts[0];
             String salt = parts[1];
-            // 明确指定 UTF-8 编码
             byte[] inputBytes = (inputPwd + salt).getBytes(CHARSET);
             String inputEncryptPwd = DigestUtils.md5DigestAsHex(inputBytes);
             return inputEncryptPwd.equals(dbPwd);

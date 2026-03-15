@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.expressway.mapper.AlertRuleMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.expressway.entity.AlertRule" >
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="type" property="type" />
+        <result column="level" property="level" />
+        <result column="threshold" property="threshold" />
+        <result column="area_type" property="areaType" />
+        <result column="area_data" property="areaData" />
+        <result column="time_type" property="timeType" />
+        <result column="time_data" property="timeData" />
+        <result column="enabled" property="enabled" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 获取告警规则列表 -->
+    <select id="getAlertRuleList" resultMap="BaseResultMap">
+        select * from alert_rule
+        <where>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="enabled != null">
+                and enabled = #{enabled}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <!-- 获取告警规则详情 -->
+    <select id="getAlertRuleById" resultMap="BaseResultMap">
+        select * from alert_rule where id = #{id}
+    </select>
+
+    <!-- 创建告警规则 -->
+    <insert id="createAlertRule">
+        insert into alert_rule (name, type, level, threshold, area_type, area_data, time_type, time_data, enabled, create_time, update_time)
+        values (#{name}, #{type}, #{level}, #{threshold}, #{areaType}, #{areaData}, #{timeType}, #{timeData}, #{enabled}, now(), now())
+    </insert>
+
+    <!-- 更新告警规则 -->
+    <update id="updateAlertRule">
+        update alert_rule set
+            name = #{name},
+            type = #{type},
+            level = #{level},
+            threshold = #{threshold},
+            area_type = #{areaType},
+            area_data = #{areaData},
+            time_type = #{timeType},
+            time_data = #{timeData},
+            update_time = now()
+        where id = #{id}
+    </update>
+
+    <!-- 删除告警规则 -->
+    <delete id="deleteAlertRule">
+        delete from alert_rule where id = #{id}
+    </delete>
+
+    <!-- 启用/禁用告警规则 -->
+    <update id="enableAlertRule">
+        update alert_rule set
+            enabled = #{enabled},
+            update_time = now()
+        where id = #{id}
+    </update>
+</mapper>

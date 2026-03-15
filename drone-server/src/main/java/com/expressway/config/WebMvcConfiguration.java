@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
@@ -41,14 +42,15 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
      */
     protected void addInterceptors(InterceptorRegistry registry) {
         log.info("开始注册自定义拦截器...");
-        registry.addInterceptor(jwtTokenAdminInterceptor)
-                .addPathPatterns("/admin/**")
-                .excludePathPatterns("/admin/employee/login");
-
+        // 使用用户拦截器，适用于所有API
         registry.addInterceptor(jwtTokenUserInterceptor)
-                .addPathPatterns("/user/**")
-                .excludePathPatterns("/user/user/login")
-                .excludePathPatterns("/user/shop/status");
+                .addPathPatterns("/**")
+                .excludePathPatterns("/auth/login")
+                .excludePathPatterns("/auth/register")
+                .excludePathPatterns("/doc.html")
+                .excludePathPatterns("/webjars/**")
+                .excludePathPatterns("/swagger-resources/**")
+                .excludePathPatterns("/v3/api-docs/**");
     }
 
     /**
@@ -79,6 +81,20 @@ public class WebMvcConfiguration extends WebMvcConfigurationSupport {
     protected void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/doc.html").addResourceLocations("classpath:/META-INF/resources/");
         registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
+    }
+
+    /**
+     * 配置CORS，允许跨域请求
+     * @param registry
+     */
+    @Override
+    protected void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOriginPatterns("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 
     /**

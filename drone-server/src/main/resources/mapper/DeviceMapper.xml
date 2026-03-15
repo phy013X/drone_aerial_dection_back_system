@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.expressway.mapper.DeviceMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.expressway.entity.Device" >
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="type" property="type" />
+        <result column="model" property="model" />
+        <result column="serial_number" property="serialNumber" />
+        <result column="group_id" property="groupId" />
+        <result column="unit" property="unit" />
+        <result column="contact" property="contact" />
+        <result column="contact_phone" property="contactPhone" />
+        <result column="location" property="location" />
+        <result column="latitude" property="latitude" />
+        <result column="longitude" property="longitude" />
+        <result column="status" property="status" />
+        <result column="ip" property="ip" />
+        <result column="port" property="port" />
+        <result column="connection_type" property="connectionType" />
+        <result column="firmware_version" property="firmwareVersion" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="last_online_time" property="lastOnlineTime" />
+    </resultMap>
+
+    <!-- 关联查询结果映射 -->
+    <resultMap id="DeviceWithGroupResultMap" type="com.expressway.entity.Device" extends="BaseResultMap">
+        <result column="group_name" property="groupName" />
+    </resultMap>
+
+    <!-- 获取设备列表 -->
+    <select id="getDeviceList" resultMap="DeviceWithGroupResultMap">
+        select d.*, dg.name as group_name from device d
+        left join device_group dg on d.group_id = dg.id
+        <where>
+            <if test="status != null">
+                and d.status = #{status}
+            </if>
+        </where>
+        order by d.create_time desc
+        limit #{page}, #{size}
+    </select>
+
+    <!-- 获取设备总数 -->
+    <select id="getDeviceCount" resultType="java.lang.Integer">
+        select count(*) from device
+        <where>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据ID获取设备详情 -->
+    <select id="getDeviceById" resultMap="DeviceWithGroupResultMap">
+        select d.*, dg.name as group_name from device d
+        left join device_group dg on d.group_id = dg.id
+        where d.id = #{id}
+    </select>
+
+    <!-- 根据序列号获取设备 -->
+    <select id="getDeviceBySerialNumber" resultMap="BaseResultMap">
+        select * from device where serial_number = #{serialNumber}
+    </select>
+
+    <!-- 创建设备 -->
+    <insert id="createDevice">
+        insert into device (name, type, model, serial_number, group_id, unit, contact, contact_phone, location, latitude, longitude, status, ip, port, connection_type, firmware_version, create_time, update_time)
+        values (#{name}, #{type}, #{model}, #{serialNumber}, #{groupId}, #{unit}, #{contact}, #{contactPhone}, #{location}, #{latitude}, #{longitude}, 0, #{ip}, #{port}, #{connectionType}, #{firmwareVersion}, now(), now())
+    </insert>
+
+    <!-- 更新设备信息 -->
+    <update id="updateDevice">
+        update device set
+            name = #{name},
+            type = #{type},
+            model = #{model},
+            group_id = #{groupId},
+            unit = #{unit},
+            contact = #{contact},
+            contact_phone = #{contactPhone},
+            location = #{location},
+            latitude = #{latitude},
+            longitude = #{longitude},
+            ip = #{ip},
+            port = #{port},
+            connection_type = #{connectionType},
+            firmware_version = #{firmwareVersion},
+            update_time = now()
+        where id = #{id}
+    </update>
+
+    <!-- 更新设备状态 -->
+    <update id="updateDeviceStatus">
+        update device set
+            status = #{status},
+            last_online_time = #{lastOnlineTime},
+            update_time = now()
+        where id = #{id}
+    </update>
+
+    <!-- 删除设备 -->
+    <delete id="deleteDevice">
+        delete from device where id = #{id}
+    </delete>
+</mapper>

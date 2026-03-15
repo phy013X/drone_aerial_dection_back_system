@@ -1,6 +1,5 @@
 package com.expressway.interceptor;
 
-import com.expressway.constant.JwtClaimsConstant;
 import com.expressway.context.BaseContext;
 import com.expressway.properties.JwtProperties;
 import com.expressway.utils.JwtUtils;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-
 /**
  * jwt令牌校验的拦截器
  */
@@ -23,7 +21,6 @@ public class JwtTokenUserInterceptor implements HandlerInterceptor {
 
     @Autowired
     private JwtProperties jwtProperties;
-
 
     /**
      * 校验jwt
@@ -42,14 +39,17 @@ public class JwtTokenUserInterceptor implements HandlerInterceptor {
         }
 
         //1、从请求头中获取令牌
-        String token = request.getHeader(jwtProperties.getUserTokenName());
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
 
         //2、校验令牌
         try {
-            log.info("jwt校验:{}", token);
+            log.info("jwt校验: {}", token);
             Claims claims = JwtUtils.parseToken(jwtProperties.getUserSecretKey(), token);
-            Long userId = Long.valueOf(claims.get(JwtClaimsConstant.USER_ID).toString());
-            log.info("当前用户id：{}", userId);
+            Long userId = Long.valueOf(claims.getSubject());
+            log.info("当前用户id: {}", userId);
             BaseContext.setCurrentId(userId);
             //3、通过，放行
             return true;
