@@ -131,7 +131,7 @@ public class DetectionServiceImpl implements DetectionService {
     }
 
     @Override
-    public Object analyzeDetectionResult(Long detectionId) {
+    public java.util.Map<String, Object> analyzeDetectionResult(Long detectionId) {
         // 模拟分析结果
         Detection detection = detectionMapper.getDetectionById(detectionId);
         if (detection == null) {
@@ -161,7 +161,8 @@ public class DetectionServiceImpl implements DetectionService {
     private String saveImage(String imageBase64) {
         try {
             byte[] imageBytes = Base64.getDecoder().decode(imageBase64);
-            String directory = "images/";
+            // 使用绝对路径，确保目录存在
+            String directory = System.getProperty("user.dir") + "/images/";
             File dir = new File(directory);
             if (!dir.exists()) {
                 dir.mkdirs();
@@ -184,30 +185,36 @@ public class DetectionServiceImpl implements DetectionService {
      */
     private List<RealTimeDetectionVO.DetectionResultVO> simulateDetection() {
         List<RealTimeDetectionVO.DetectionResultVO> results = new ArrayList<>();
-        // 模拟检测到一个人
-        RealTimeDetectionVO.DetectionResultVO personResult = new RealTimeDetectionVO.DetectionResultVO();
-        personResult.setId(1L);
-        personResult.setType("person");
-        personResult.setConfidence(0.95);
-        RealTimeDetectionVO.BoundingBox personBbox = new RealTimeDetectionVO.BoundingBox();
-        personBbox.setX(100);
-        personBbox.setY(150);
-        personBbox.setWidth(50);
-        personBbox.setHeight(100);
-        personResult.setBbox(personBbox);
-        results.add(personResult);
-        // 模拟检测到一辆车
-        RealTimeDetectionVO.DetectionResultVO carResult = new RealTimeDetectionVO.DetectionResultVO();
-        carResult.setId(2L);
-        carResult.setType("car");
-        carResult.setConfidence(0.92);
-        RealTimeDetectionVO.BoundingBox carBbox = new RealTimeDetectionVO.BoundingBox();
-        carBbox.setX(200);
-        carBbox.setY(250);
-        carBbox.setWidth(80);
-        carBbox.setHeight(40);
-        carResult.setBbox(carBbox);
-        results.add(carResult);
+        
+        // 可能的检测类型
+        String[] types = {"person", "car", "truck", "bicycle", "motorcycle"};
+        
+        // 随机生成1-3个检测结果
+        int count = 1 + (int)(Math.random() * 3);
+        
+        for (int i = 0; i < count; i++) {
+            RealTimeDetectionVO.DetectionResultVO result = new RealTimeDetectionVO.DetectionResultVO();
+            result.setId((long)(i + 1));
+            
+            // 随机选择检测类型
+            String type = types[(int)(Math.random() * types.length)];
+            result.setType(type);
+            
+            // 随机生成置信度（0.8-0.99）
+            double confidence = 0.8 + (Math.random() * 0.19);
+            result.setConfidence(confidence);
+            
+            // 随机生成边界框
+            RealTimeDetectionVO.BoundingBox bbox = new RealTimeDetectionVO.BoundingBox();
+            bbox.setX(50 + (int)(Math.random() * 300));
+            bbox.setY(50 + (int)(Math.random() * 200));
+            bbox.setWidth(30 + (int)(Math.random() * 100));
+            bbox.setHeight(30 + (int)(Math.random() * 100));
+            result.setBbox(bbox);
+            
+            results.add(result);
+        }
+        
         return results;
     }
 }

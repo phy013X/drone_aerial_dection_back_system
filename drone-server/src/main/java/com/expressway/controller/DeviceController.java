@@ -45,7 +45,24 @@ public class DeviceController {
     @Operation(summary = "获取设备详情", description = "根据设备ID获取设备详细信息")
     public Result<DeviceVO> getDeviceById(@PathVariable Long id) {
         log.info("获取设备详情：id={}", id);
-        return Result.success(deviceService.getDeviceById(id));
+        com.expressway.entity.Device device = deviceService.getDeviceById(id);
+        DeviceVO deviceVO = new DeviceVO();
+        deviceVO.setId(device.getId());
+        deviceVO.setName(device.getName());
+        deviceVO.setType(device.getType());
+        deviceVO.setModel(device.getModel());
+        deviceVO.setSerialNumber(device.getSerialNumber());
+        deviceVO.setGroupName(device.getGroupName());
+        deviceVO.setUnit(device.getUnit());
+        deviceVO.setLocation(device.getLocation());
+        deviceVO.setStatus(device.getStatus());
+        deviceVO.setStatusText(getStatusText(device.getStatus()));
+        deviceVO.setIp(device.getIp());
+        deviceVO.setPort(device.getPort());
+        deviceVO.setConnectionType(device.getConnectionType());
+        deviceVO.setLastOnlineTime(device.getLastOnlineTime());
+        deviceVO.setCreateTime(device.getCreateTime());
+        return Result.success(deviceVO);
     }
 
     /**
@@ -112,5 +129,28 @@ public class DeviceController {
         log.info("断开设备连接：id={}", id);
         deviceService.disconnectDevice(id);
         return Result.success("断开连接成功");
+    }
+
+    /**
+     * 获取状态文本
+     * @param status 状态值
+     * @return 状态文本
+     */
+    private String getStatusText(Integer status) {
+        if (status == null) {
+            return "未知";
+        }
+        switch (status) {
+            case 0:
+                return "离线";
+            case 1:
+                return "在线";
+            case 2:
+                return "故障";
+            case 3:
+                return "维护中";
+            default:
+                return "未知";
+        }
     }
 }

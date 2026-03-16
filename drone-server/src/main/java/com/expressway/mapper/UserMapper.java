@@ -11,10 +11,10 @@ import org.apache.ibatis.annotations.Param;
 public interface UserMapper {
     /**
      * 用户登录
-     * @param username 用户名/邮箱/手机号
+     * @param userIdentifier 用户名/邮箱/手机号
      * @return 用户信息
      */
-    User login(@Param("username") String username);
+    User login(@Param("userIdentifier") String userIdentifier);
 
     /**
      * 根据用户名查询用户
@@ -61,4 +61,36 @@ public interface UserMapper {
      * @param user 用户信息
      */
     void update(User user);
+
+    /**
+     * 获取用户登录历史
+     * @param userId 用户ID
+     * @param offset 偏移量
+     * @param limit 每页数量
+     * @return 登录历史列表
+     */
+    java.util.List<Object> getLoginHistory(@Param("userId") Long userId, @Param("offset") Integer offset, @Param("limit") Integer limit);
+
+    /**
+     * 获取用户登录历史总数
+     * @param userId 用户ID
+     * @return 登录历史总数
+     */
+    Integer getLoginHistoryCount(@Param("userId") Long userId);
+
+    /**
+     * 获取用户操作日志
+     * @param userId 用户ID
+     * @param offset 偏移量
+     * @param limit 每页数量
+     * @return 操作日志列表
+     */
+    java.util.List<Object> getOperationLogs(@Param("userId") Long userId, @Param("offset") Integer offset, @Param("limit") Integer limit);
+
+    /**
+     * 获取用户操作日志总数
+     * @param userId 用户ID
+     * @return 操作日志总数
+     */
+    Integer getOperationLogsCount(@Param("userId") Long userId);
 }

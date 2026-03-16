@@ -27,7 +27,7 @@
     <select id="login" resultMap="LoginResultMap">
         select u.*, r.name as role_name from user u
         left join role r on u.role_id = r.id
-        where (u.username = #{username} or u.email = #{username} or u.phone = #{username}) and u.status = 1
+        where (u.username = #{userIdentifier} or u.email = #{userIdentifier} or u.phone = #{userIdentifier}) and u.status = 1
     </select>
 
     <!-- 根据用户名查询 -->
@@ -46,7 +46,7 @@
     </select>
 
     <!-- 注册用户 -->
-    <insert id="register">
+    <insert id="register" useGeneratedKeys="true" keyProperty="id">
         insert into user (username, password, name, email, phone, role_id, status, create_time, update_time)
         values (#{username}, #{password}, #{name}, #{email}, #{phone}, #{roleId}, 1, now(), now())
     </insert>
@@ -59,5 +59,51 @@
     <!-- 根据ID查询用户 -->
     <select id="selectById" resultMap="BaseResultMap">
         select * from user where id = #{id}
+    </select>
+
+    <!-- 更新用户信息 -->
+    <update id="update">
+        update user
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="roleId != null">role_id = #{roleId},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = now()
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 获取用户登录历史 -->
+    <select id="getLoginHistory" resultType="java.util.HashMap">
+        select id, user_id, username, ip, user_agent, create_time
+        from system_log
+        where user_id = #{userId} and operation = 'login'
+        order by create_time desc
+        limit #{offset}, #{limit}
+    </select>
+
+    <!-- 获取用户登录历史总数 -->
+    <select id="getLoginHistoryCount" resultType="java.lang.Integer">
+        select count(*) from system_log
+        where user_id = #{userId} and operation = 'login'
+    </select>
+
+    <!-- 获取用户操作日志 -->
+    <select id="getOperationLogs" resultType="java.util.HashMap">
+        select id, user_id, username, operation, module, method, ip, user_agent, execute_time, status, error_message, create_time
+        from system_log
+        where user_id = #{userId}
+        order by create_time desc
+        limit #{offset}, #{limit}
+    </select>
+
+    <!-- 获取用户操作日志总数 -->
+    <select id="getOperationLogsCount" resultType="java.lang.Integer">
+        select count(*) from system_log
+        where user_id = #{userId}
     </select>
 </mapper>

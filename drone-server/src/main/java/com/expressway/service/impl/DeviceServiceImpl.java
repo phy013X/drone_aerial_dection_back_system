@@ -49,9 +49,9 @@ public class DeviceServiceImpl implements DeviceService {
             }
         }
         // 获取设备列表
-        List<Device> deviceList = deviceMapper.getDeviceList(statusInt, offset, pageSize);
+        List<Device> deviceList = deviceMapper.getDeviceList(statusInt, keyword, offset, pageSize);
         // 获取设备总数
-        int total = deviceMapper.getDeviceCount(statusInt);
+        int total = deviceMapper.getDeviceCount(statusInt, keyword);
         // 转换为VO
         List<DeviceVO> deviceVOList = new ArrayList<>();
         for (Device device : deviceList) {
@@ -77,28 +77,12 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
-    public DeviceVO getDeviceById(Long id) {
+    public Device getDeviceById(Long id) {
         Device device = deviceMapper.getDeviceById(id);
         if (device == null) {
             throw new BusinessException("设备不存在");
         }
-        DeviceVO deviceVO = new DeviceVO();
-        deviceVO.setId(device.getId());
-        deviceVO.setName(device.getName());
-        deviceVO.setType(device.getType());
-        deviceVO.setModel(device.getModel());
-        deviceVO.setSerialNumber(device.getSerialNumber());
-        deviceVO.setGroupName(device.getGroupName());
-        deviceVO.setUnit(device.getUnit());
-        deviceVO.setLocation(device.getLocation());
-        deviceVO.setStatus(device.getStatus());
-        deviceVO.setStatusText(getStatusText(device.getStatus()));
-        deviceVO.setIp(device.getIp());
-        deviceVO.setPort(device.getPort());
-        deviceVO.setConnectionType(device.getConnectionType());
-        deviceVO.setLastOnlineTime(device.getLastOnlineTime());
-        deviceVO.setCreateTime(device.getCreateTime());
-        return deviceVO;
+        return device;
     }
 
     @Override
@@ -171,17 +155,16 @@ public class DeviceServiceImpl implements DeviceService {
             throw new BusinessException("设备不存在");
         }
         // 更新设备状态
-        deviceMapper.updateDeviceStatus(id, deviceStatusUpdateDTO.getStatus(), new Date());
+        Date now = new Date();
+        deviceMapper.updateDeviceStatus(id, deviceStatusUpdateDTO.getStatus(), now);
         // 更新其他信息
-        if (deviceStatusUpdateDTO.getIp() != null || deviceStatusUpdateDTO.getPort() != null) {
-            Device device = new Device();
-            device.setId(id);
-            device.setIp(deviceStatusUpdateDTO.getIp());
-            device.setPort(deviceStatusUpdateDTO.getPort());
-            device.setLatitude(deviceStatusUpdateDTO.getLatitude());
-            device.setLongitude(deviceStatusUpdateDTO.getLongitude());
-            deviceMapper.updateDevice(device);
-        }
+        Device device = new Device();
+        device.setId(id);
+        device.setIp(deviceStatusUpdateDTO.getIp() != null ? deviceStatusUpdateDTO.getIp() : existingDevice.getIp());
+        device.setPort(deviceStatusUpdateDTO.getPort() != null ? deviceStatusUpdateDTO.getPort() : existingDevice.getPort());
+        device.setLatitude(deviceStatusUpdateDTO.getLatitude() != null ? deviceStatusUpdateDTO.getLatitude() : existingDevice.getLatitude());
+        device.setLongitude(deviceStatusUpdateDTO.getLongitude() != null ? deviceStatusUpdateDTO.getLongitude() : existingDevice.getLongitude());
+        deviceMapper.updateDevice(device);
         return deviceMapper.getDeviceById(id);
     }
 
@@ -202,8 +185,33 @@ public class DeviceServiceImpl implements DeviceService {
         if (device == null) {
             throw new BusinessException("设备不存在");
         }
-        // 模拟设备连接
-        log.info("连接设备：{}", device.getName());
+        
+        // 检查设备是否已在线
+        if (device.getStatus() == 1) {
+            throw new BusinessException("设备已在线");
+        }
+        
+        // 检查IP和端口是否有效
+        if (device.getIp() == null || device.getPort() == null) {
+            throw new BusinessException("设备IP或端口未配置");
+        }
+        
+        // 模拟设备连接过程
+        log.info("正在连接设备：{}，IP：{}:{}，连接方式：{}", 
+                device.getName(), device.getIp(), device.getPort(), device.getConnectionType());
+        
+        // 模拟连接超时检查
+        try {
+            // 模拟连接延迟
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BusinessException("连接过程被中断");
+        }
+        
+        // 模拟连接成功
+        log.info("设备连接成功：{}", device.getName());
+        
         // 更新设备状态为在线
         deviceMapper.updateDeviceStatus(id, 1, new Date());
         return true;
@@ -216,8 +224,26 @@ public class DeviceServiceImpl implements DeviceService {
         if (device == null) {
             throw new BusinessException("设备不存在");
         }
+        
+        // 检查设备是否已离线
+        if (device.getStatus() == 0) {
+            throw new BusinessException("设备已离线");
+        }
+        
         // 模拟设备断开连接
-        log.info("断开设备连接：{}", device.getName());
+        log.info("正在断开设备连接：{}", device.getName());
+        
+        // 模拟断开延迟
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new BusinessException("断开过程被中断");
+        }
+        
+        // 模拟断开成功
+        log.info("设备断开连接成功：{}", device.getName());
+        
         // 更新设备状态为离线
         deviceMapper.updateDeviceStatus(id, 0, new Date());
         return true;

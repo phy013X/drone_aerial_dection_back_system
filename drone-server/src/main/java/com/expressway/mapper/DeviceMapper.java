@@ -14,18 +14,20 @@ public interface DeviceMapper {
     /**
      * 获取设备列表
      * @param status 设备状态
-     * @param page 页码
-     * @param size 每页数量
+     * @param keyword 搜索关键词
+     * @param offset 偏移量
+     * @param limit 每页数量
      * @return 设备列表
      */
-    List<Device> getDeviceList(@Param("status") Integer status, @Param("page") Integer page, @Param("size") Integer size);
+    List<Device> getDeviceList(@Param("status") Integer status, @Param("keyword") String keyword, @Param("offset") Integer offset, @Param("limit") Integer limit);
 
     /**
      * 获取设备总数
      * @param status 设备状态
+     * @param keyword 搜索关键词
      * @return 设备总数
      */
-    Integer getDeviceCount(@Param("status") Integer status);
+    Integer getDeviceCount(@Param("status") Integer status, @Param("keyword") String keyword);
 
     /**
      * 根据ID获取设备详情

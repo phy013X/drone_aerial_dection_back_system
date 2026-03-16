@@ -21,26 +21,34 @@ public interface AlertMapper {
      * 获取告警列表
      * @param level 告警级别
      * @param status 告警状态
-     * @param page 页码
-     * @param size 每页数量
+     * @param startDate 开始时间
+     * @param endDate 结束时间
+     * @param offset 偏移量
+     * @param limit 每页数量
      * @return 告警列表
      */
     List<Alert> getAlertList(
             @Param("level") Integer level,
             @Param("status") Integer status,
-            @Param("page") Integer page,
-            @Param("size") Integer size
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate,
+            @Param("offset") Integer offset,
+            @Param("limit") Integer limit
     );
 
     /**
      * 获取告警总数
      * @param level 告警级别
      * @param status 告警状态
+     * @param startDate 开始时间
+     * @param endDate 结束时间
      * @return 告警总数
      */
     Integer getAlertCount(
             @Param("level") Integer level,
-            @Param("status") Integer status
+            @Param("status") Integer status,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate
     );
 
     /**

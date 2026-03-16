@@ -39,9 +39,12 @@
             <if test="status != null">
                 and d.status = #{status}
             </if>
+            <if test="keyword != null and keyword != ''">
+                and (d.name like concat('%', #{keyword}, '%') or d.serial_number like concat('%', #{keyword}, '%') or d.location like concat('%', #{keyword}, '%'))
+            </if>
         </where>
         order by d.create_time desc
-        limit #{page}, #{size}
+        limit #{offset}, #{limit}
     </select>
 
     <!-- 获取设备总数 -->
@@ -50,6 +53,9 @@
         <where>
             <if test="status != null">
                 and status = #{status}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                and (name like concat('%', #{keyword}, '%') or serial_number like concat('%', #{keyword}, '%') or location like concat('%', #{keyword}, '%'))
             </if>
         </where>
     </select>

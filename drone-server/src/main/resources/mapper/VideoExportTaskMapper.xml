@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.expressway.mapper.VideoExportTaskMapper">
+    <resultMap id="BaseResultMap" type="com.expressway.entity.VideoExportTask">
+        <id column="id" property="id" />
+        <result column="export_id" property="exportId" />
+        <result column="video_id" property="videoId" />
+        <result column="task_id" property="taskId" />
+        <result column="export_type" property="exportType" />
+        <result column="export_config" property="exportConfig" />
+        <result column="status" property="status" />
+        <result column="progress" property="progress" />
+        <result column="file_url" property="fileUrl" />
+        <result column="file_size" property="fileSize" />
+        <result column="error_message" property="errorMessage" />
+        <result column="create_user_id" property="createUserId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="complete_time" property="completeTime" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.expressway.entity.VideoExportTask" useGeneratedKeys="true" keyProperty="id">
+        insert into video_export_task (export_id, video_id, task_id, export_type, export_config, status, progress, create_user_id)
+        values (#{exportId}, #{videoId}, #{taskId}, #{exportType}, #{exportConfig}, #{status}, #{progress}, #{createUserId})
+    </insert>
+
+    <select id="selectByExportId" resultMap="BaseResultMap">
+        select * from video_export_task where export_id = #{exportId}
+    </select>
+
+    <select id="selectByVideoId" resultMap="BaseResultMap">
+        select * from video_export_task where video_id = #{videoId}
+        order by create_time desc
+        limit #{page}, #{size}
+    </select>
+
+    <select id="countByVideoId" resultType="int">
+        select count(*) from video_export_task where video_id = #{videoId}
+    </select>
+
+    <update id="updateProgress">
+        update video_export_task set progress = #{progress}, update_time = now()
+        where export_id = #{exportId}
+    </update>
+
+    <update id="updateComplete">
+        update video_export_task set status = #{status}, file_url = #{fileUrl}, file_size = #{fileSize}, complete_time = now(), progress = 100
+        where export_id = #{exportId}
+    </update>
+
+    <delete id="deleteByExportId">
+        delete from video_export_task where export_id = #{exportId}
+    </delete>
+</mapper>

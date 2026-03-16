@@ -66,4 +66,60 @@ public interface VideoMapper {
      * @param id 视频ID
      */
     void deleteVideo(Long id);
+
+    /**
+     * 更新视频信息
+     * @param video 视频信息
+     */
+    void updateVideo(Video video);
+
+    /**
+     * 批量删除视频
+     * @param ids 视频ID列表
+     */
+    void batchDeleteVideo(@Param("ids") List<Long> ids);
+
+    /**
+     * 获取视频总数(带条件)
+     * @param keyword 关键词
+     * @param status 状态
+     * @param deviceId 设备ID
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 视频总数
+     */
+    Integer getVideoCountByCondition(
+            @Param("keyword") String keyword,
+            @Param("status") Integer status,
+            @Param("deviceId") Long deviceId,
+            @Param("startTime") String startTime,
+            @Param("endTime") String endTime
+    );
+
+    /**
+     * 获取视频列表(带条件)
+     * @param keyword 关键词
+     * @param status 状态
+     * @param deviceId 设备ID
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param page 页码
+     * @param size 每页数量
+     * @return 视频列表
+     */
+    List<Video> getVideoListByCondition(
+            @Param("keyword") String keyword,
+            @Param("status") Integer status,
+            @Param("deviceId") Long deviceId,
+            @Param("startTime") String startTime,
+            @Param("endTime") String endTime,
+            @Param("page") Integer page,
+            @Param("size") Integer size
+    );
+
+    /**
+     * 更新视频检测状态
+     * @param video 视频信息
+     */
+    void updateDetectionStatus(Video video);
 }

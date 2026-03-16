@@ -1,10 +1,15 @@
 package com.expressway.controller;
 
+import com.expressway.result.PageResult;
 import com.expressway.result.Result;
+import com.expressway.service.HistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /**
  * 历史记录相关控制器
@@ -14,6 +19,9 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "历史记录管理", description = "检测历史、告警历史、视频记录相关接口")
 @Slf4j
 public class HistoryController {
+
+    @Resource
+    private HistoryService historyService;
 
     /**
      * 获取检测历史
@@ -29,8 +37,8 @@ public class HistoryController {
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
         log.info("获取检测历史：deviceId={}, type={}, startDate={}, endDate={}, page={}, pageSize={}", 
                 deviceId, type, startDate, endDate, page, pageSize);
-        // 实现获取检测历史逻辑
-        return Result.success("检测历史数据");
+        PageResult<Map<String, Object>> detectionHistory = historyService.getDetectionHistory(deviceId, type, startDate, endDate, page, pageSize);
+        return Result.success(detectionHistory);
     }
 
     /**
@@ -40,8 +48,8 @@ public class HistoryController {
     @Operation(summary = "获取检测详情", description = "获取检测历史详情")
     public Result<?> getDetectionDetail(@PathVariable Long id) {
         log.info("获取检测详情：id={}", id);
-        // 实现获取检测详情逻辑
-        return Result.success("检测详情数据");
+        Map<String, Object> detail = historyService.getDetectionDetail(id);
+        return Result.success(detail);
     }
 
     /**
@@ -56,8 +64,8 @@ public class HistoryController {
             @RequestParam(value = "endDate", required = false) String endDate) {
         log.info("导出检测历史：deviceId={}, type={}, startDate={}, endDate={}", 
                 deviceId, type, startDate, endDate);
-        // 实现导出检测历史逻辑
-        return Result.success("导出成功");
+        Map<String, Object> result = historyService.exportDetectionHistory(deviceId, type, startDate, endDate);
+        return Result.success(result);
     }
 
     /**
@@ -74,8 +82,8 @@ public class HistoryController {
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
         log.info("获取告警历史：level={}, status={}, startDate={}, endDate={}, page={}, pageSize={}", 
                 level, status, startDate, endDate, page, pageSize);
-        // 实现获取告警历史逻辑
-        return Result.success("告警历史数据");
+        PageResult<Map<String, Object>> alertHistory = historyService.getAlertHistory(level, status, startDate, endDate, page, pageSize);
+        return Result.success(alertHistory);
     }
 
     /**
@@ -85,8 +93,8 @@ public class HistoryController {
     @Operation(summary = "获取告警详情", description = "获取告警历史详情")
     public Result<?> getAlertDetail(@PathVariable Long id) {
         log.info("获取告警详情：id={}", id);
-        // 实现获取告警详情逻辑
-        return Result.success("告警详情数据");
+        Map<String, Object> detail = historyService.getAlertDetail(id);
+        return Result.success(detail);
     }
 
     /**
@@ -94,10 +102,11 @@ public class HistoryController {
      */
     @PostMapping("/alert/{id}/process")
     @Operation(summary = "处理告警", description = "处理告警记录")
-    public Result<?> processAlert(@PathVariable Long id, @RequestBody Object processData) {
+    public Result<?> processAlert(@PathVariable Long id, @RequestBody Map<String, String> processData) {
         log.info("处理告警：id={}, data={}", id, processData);
-        // 实现处理告警逻辑
-        return Result.success("处理成功");
+        String processNote = processData.get("processNote");
+        Map<String, Object> result = historyService.processAlert(id, processNote);
+        return Result.success(result);
     }
 
     /**
@@ -112,8 +121,8 @@ public class HistoryController {
             @RequestParam(value = "endDate", required = false) String endDate) {
         log.info("导出告警历史：level={}, status={}, startDate={}, endDate={}", 
                 level, status, startDate, endDate);
-        // 实现导出告警历史逻辑
-        return Result.success("导出成功");
+        Map<String, Object> result = historyService.exportAlertHistory(level, status, startDate, endDate);
+        return Result.success(result);
     }
 
     /**
@@ -127,8 +136,8 @@ public class HistoryController {
             @RequestParam(value = "page", defaultValue = "1") Integer page,
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
         log.info("获取视频记录：deviceId={}, date={}, page={}, pageSize={}", deviceId, date, page, pageSize);
-        // 实现获取视频记录逻辑
-        return Result.success("视频记录数据");
+        PageResult<Map<String, Object>> videoHistory = historyService.getVideoHistory(deviceId, date, page, pageSize);
+        return Result.success(videoHistory);
     }
 
     /**
@@ -138,8 +147,8 @@ public class HistoryController {
     @Operation(summary = "获取视频详情", description = "获取视频记录详情")
     public Result<?> getVideoDetail(@PathVariable Long id) {
         log.info("获取视频详情：id={}", id);
-        // 实现获取视频详情逻辑
-        return Result.success("视频详情数据");
+        Map<String, Object> detail = historyService.getVideoDetail(id);
+        return Result.success(detail);
     }
 
     /**
@@ -149,8 +158,8 @@ public class HistoryController {
     @Operation(summary = "下载视频", description = "下载指定视频")
     public Result<?> downloadVideo(@PathVariable Long id) {
         log.info("下载视频：id={}", id);
-        // 实现下载视频逻辑
-        return Result.success("下载成功");
+        Map<String, Object> result = historyService.downloadVideo(id);
+        return Result.success(result);
     }
 
     /**
@@ -160,7 +169,7 @@ public class HistoryController {
     @Operation(summary = "删除视频记录", description = "删除指定视频记录")
     public Result<?> deleteVideo(@PathVariable Long id) {
         log.info("删除视频记录：id={}", id);
-        // 实现删除视频记录逻辑
-        return Result.success("删除成功");
+        Map<String, Object> result = historyService.deleteVideo(id);
+        return Result.success(result);
     }
 }

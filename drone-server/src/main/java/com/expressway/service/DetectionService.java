@@ -44,5 +44,5 @@ public interface DetectionService {
      * @param detectionId 检测ID
      * @return 分析结果
      */
-    Object analyzeDetectionResult(Long detectionId);
+    java.util.Map<String, Object> analyzeDetectionResult(Long detectionId);
 }

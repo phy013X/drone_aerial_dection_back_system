@@ -34,13 +34,13 @@ public class AlertServiceImpl implements AlertService {
         if (level != null) {
             switch (level) {
                 case "high":
-                    levelInt = 3;
+                    levelInt = 1;
                     break;
                 case "medium":
                     levelInt = 2;
                     break;
                 case "low":
-                    levelInt = 1;
+                    levelInt = 3;
                     break;
             }
         }
@@ -49,17 +49,20 @@ public class AlertServiceImpl implements AlertService {
         if (status != null) {
             switch (status) {
                 case "unprocessed":
-                    statusInt = 0;
+                    statusInt = 1;
                     break;
                 case "processed":
-                    statusInt = 1;
+                    statusInt = 2;
+                    break;
+                case "ignored":
+                    statusInt = 3;
                     break;
             }
         }
         // 获取告警列表
-        List<Alert> alertList = alertMapper.getAlertList(levelInt, statusInt, offset, pageSize);
+        List<Alert> alertList = alertMapper.getAlertList(levelInt, statusInt, startDate, endDate, offset, pageSize);
         // 获取告警总数
-        int total = alertMapper.getAlertCount(levelInt, statusInt);
+        int total = alertMapper.getAlertCount(levelInt, statusInt, startDate, endDate);
         // 转换为VO
         List<AlertVO> alertVOList = new ArrayList<>();
         for (Alert alert : alertList) {

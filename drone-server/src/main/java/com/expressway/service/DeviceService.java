@@ -26,7 +26,7 @@ public interface DeviceService {
      * @param id 设备ID
      * @return 设备详情
      */
-    DeviceVO getDeviceById(Long id);
+    Device getDeviceById(Long id);
 
     /**
      * 注册设备
