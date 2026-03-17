@@ -3,6 +3,7 @@ package com.expressway.service.impl;
 import com.expressway.service.AnalysisService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -323,16 +324,18 @@ public class AnalysisServiceImpl implements AnalysisService {
         task.setProgress(0);
         exportTasks.put(exportId, task);
 
-        // 启动异步导出任务
-        new Thread(() -> {
-            try {
-                simulateExport(task);
-            } catch (Exception e) {
-                log.error("导出任务执行失败", e);
-            }
-        }).start();
+        executeExportTask(task);
 
         return exportId;
+    }
+
+    @Async
+    public void executeExportTask(ExportTask task) {
+        try {
+            simulateExport(task);
+        } catch (Exception e) {
+            log.error("导出任务执行失败", e);
+        }
     }
 
     @Override

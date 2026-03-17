@@ -32,10 +32,17 @@ public class DeviceController {
     public Result<?> getDeviceList(
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "type", required = false) String type,
             @RequestParam(value = "page", defaultValue = "1") Integer page,
-            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
-        log.info("获取设备列表：keyword={}, status={}, page={}, pageSize={}", keyword, status, page, pageSize);
-        return Result.success(deviceService.getDeviceList(keyword, status, page, pageSize));
+            @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
+        log.info("获取设备列表：keyword={}, status={}, type={}, page={}, limit={}", keyword, status, type, page, limit);
+        com.expressway.result.PageResult<?> result = deviceService.getDeviceList(keyword, status, type, page, limit);
+        java.util.Map<String, Object> data = new java.util.HashMap<>();
+        data.put("list", result.getRecords());
+        data.put("total", result.getTotal());
+        data.put("page", page);
+        data.put("limit", limit);
+        return Result.success(data);
     }
 
     /**
@@ -43,26 +50,26 @@ public class DeviceController {
      */
     @GetMapping("/{id}")
     @Operation(summary = "获取设备详情", description = "根据设备ID获取设备详细信息")
-    public Result<DeviceVO> getDeviceById(@PathVariable Long id) {
+    public Result<?> getDeviceById(@PathVariable Long id) {
         log.info("获取设备详情：id={}", id);
         com.expressway.entity.Device device = deviceService.getDeviceById(id);
-        DeviceVO deviceVO = new DeviceVO();
-        deviceVO.setId(device.getId());
-        deviceVO.setName(device.getName());
-        deviceVO.setType(device.getType());
-        deviceVO.setModel(device.getModel());
-        deviceVO.setSerialNumber(device.getSerialNumber());
-        deviceVO.setGroupName(device.getGroupName());
-        deviceVO.setUnit(device.getUnit());
-        deviceVO.setLocation(device.getLocation());
-        deviceVO.setStatus(device.getStatus());
-        deviceVO.setStatusText(getStatusText(device.getStatus()));
-        deviceVO.setIp(device.getIp());
-        deviceVO.setPort(device.getPort());
-        deviceVO.setConnectionType(device.getConnectionType());
-        deviceVO.setLastOnlineTime(device.getLastOnlineTime());
-        deviceVO.setCreateTime(device.getCreateTime());
-        return Result.success(deviceVO);
+        java.util.Map<String, Object> data = new java.util.HashMap<>();
+        data.put("id", device.getId());
+        data.put("name", device.getName());
+        data.put("type", device.getType());
+        data.put("ip", device.getIp());
+        data.put("port", device.getPort());
+        data.put("status", device.getStatus() == 1 ? "online" : device.getStatus() == 2 ? "error" : "offline");
+        data.put("location", device.getLocation());
+        data.put("lastOnlineTime", device.getLastOnlineTime());
+        data.put("createTime", device.getCreateTime());
+        // 添加设备配置信息
+        java.util.Map<String, Object> config = new java.util.HashMap<>();
+        config.put("videoStreamUrl", "rtsp://" + device.getIp() + ":" + device.getPort() + "/stream1");
+        config.put("detectionInterval", 1000);
+        config.put("maxConnection", 5);
+        data.put("config", config);
+        return Result.success(data);
     }
 
     /**
@@ -72,8 +79,17 @@ public class DeviceController {
     @Operation(summary = "添建设备", description = "注册新设备")
     public Result<?> addDevice(@Validated @RequestBody DeviceRegisterDTO deviceRegisterDTO) {
         log.info("添建设备：{}", deviceRegisterDTO);
-        deviceService.registerDevice(deviceRegisterDTO);
-        return Result.success("添加成功");
+        com.expressway.entity.Device device = deviceService.registerDevice(deviceRegisterDTO);
+        java.util.Map<String, Object> data = new java.util.HashMap<>();
+        data.put("id", device.getId());
+        data.put("name", device.getName());
+        data.put("type", device.getType());
+        data.put("ip", device.getIp());
+        data.put("port", device.getPort());
+        data.put("status", "offline");
+        data.put("location", device.getLocation());
+        data.put("createTime", device.getCreateTime());
+        return Result.success(data);
     }
 
     /**
@@ -83,8 +99,18 @@ public class DeviceController {
     @Operation(summary = "更新设备", description = "更新设备信息")
     public Result<?> updateDevice(@PathVariable Long id, @Validated @RequestBody DeviceRegisterDTO deviceRegisterDTO) {
         log.info("更新设备：id={}, {}", id, deviceRegisterDTO);
-        deviceService.updateDevice(id, deviceRegisterDTO);
-        return Result.success("更新成功");
+        com.expressway.entity.Device device = deviceService.updateDevice(id, deviceRegisterDTO);
+        java.util.Map<String, Object> data = new java.util.HashMap<>();
+        data.put("id", device.getId());
+        data.put("name", device.getName());
+        data.put("type", device.getType());
+        data.put("ip", device.getIp());
+        data.put("port", device.getPort());
+        data.put("status", device.getStatus() == 1 ? "online" : device.getStatus() == 2 ? "error" : "offline");
+        data.put("location", device.getLocation());
+        data.put("lastOnlineTime", device.getLastOnlineTime());
+        data.put("createTime", device.getCreateTime());
+        return Result.success(data);
     }
 
     /**
@@ -95,7 +121,7 @@ public class DeviceController {
     public Result<?> deleteDevice(@PathVariable Long id) {
         log.info("删除设备：id={}", id);
         deviceService.deleteDevice(id);
-        return Result.success("删除成功");
+        return Result.success(null);
     }
 
     /**
@@ -105,8 +131,12 @@ public class DeviceController {
     @Operation(summary = "更新设备状态", description = "更新设备运行状态")
     public Result<?> updateDeviceStatus(@PathVariable Long id, @Validated @RequestBody DeviceStatusUpdateDTO deviceStatusUpdateDTO) {
         log.info("更新设备状态：id={}, {}", id, deviceStatusUpdateDTO);
-        deviceService.updateDeviceStatus(id, deviceStatusUpdateDTO);
-        return Result.success("状态更新成功");
+        com.expressway.entity.Device device = deviceService.updateDeviceStatus(id, deviceStatusUpdateDTO);
+        java.util.Map<String, Object> data = new java.util.HashMap<>();
+        data.put("id", device.getId());
+        data.put("status", device.getStatus() == 1 ? "online" : device.getStatus() == 2 ? "error" : "offline");
+        data.put("lastOnlineTime", device.getLastOnlineTime());
+        return Result.success(data);
     }
 
     /**

@@ -273,7 +273,12 @@ public class VideoServiceImpl implements VideoService {
 
             Video video = videoMapper.getVideoById(task.getVideoId());
 
-            int totalFrames = 1000;
+            int totalFrames = 0;
+            if (video.getFps() != null && video.getDuration() != null) {
+                totalFrames = (int) (video.getFps() * video.getDuration());
+            } else {
+                totalFrames = 1000;
+            }
             int detectionCount = 0;
             List<VideoDetectionResult> results = new ArrayList<>();
 
@@ -281,7 +286,7 @@ public class VideoServiceImpl implements VideoService {
                 VideoDetectionResult result = new VideoDetectionResult();
                 result.setTaskId(task.getId());
                 result.setFrameNumber(i);
-                result.setTimestamp((double) i / 30.0);
+                result.setTimestamp((double) i / (video.getFps() != null ? video.getFps() : 30.0));
                 result.setDetectionCount(2);
                 result.setInferenceTime(35);
                 result.setTargets("[{\"class\": \"person\", \"confidence\": 0.95, \"bbox\": [100, 100, 200, 200]}, {\"class\": \"car\", \"confidence\": 0.90, \"bbox\": [300, 300, 400, 400]}]");

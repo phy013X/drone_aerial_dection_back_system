@@ -258,7 +258,6 @@ public class SystemConfigController {
         log.info("获取系统日志配置");
         return Result.success(systemConfigService.getLogConfig());
     }
-
     /**
      * 更新系统日志配置
      */

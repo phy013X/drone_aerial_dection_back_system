@@ -54,7 +54,9 @@ public class AlertController {
     public Result<?> processAlert(@PathVariable Long id, @RequestParam(value = "processNote", required = false) String processNote) {
         log.info("处理告警：id={}, processNote={}", id, processNote);
         alertService.processAlert(id, processNote);
-        return Result.success("处理成功");
+        // 返回更新后的告警信息
+        Object updatedAlert = alertService.getAlertById(id);
+        return Result.success(updatedAlert);
     }
 
     /**
@@ -65,6 +67,8 @@ public class AlertController {
     public Result<?> closeAlert(@PathVariable Long id) {
         log.info("关闭告警：id={}", id);
         alertService.closeAlert(id);
-        return Result.success("关闭成功");
+        // 返回更新后的告警信息
+        Object updatedAlert = alertService.getAlertById(id);
+        return Result.success(updatedAlert);
     }
 }

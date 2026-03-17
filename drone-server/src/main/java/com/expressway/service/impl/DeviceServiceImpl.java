@@ -27,7 +27,7 @@ public class DeviceServiceImpl implements DeviceService {
     private DeviceMapper deviceMapper;
 
     @Override
-    public PageResult<DeviceVO> getDeviceList(String keyword, String status, Integer page, Integer pageSize) {
+    public PageResult<DeviceVO> getDeviceList(String keyword, String status, String type, Integer page, Integer pageSize) {
         // 计算分页偏移量
         int offset = (page - 1) * pageSize;
         // 转换状态字符串为整数（如果前端传递的是字符串）
@@ -49,9 +49,9 @@ public class DeviceServiceImpl implements DeviceService {
             }
         }
         // 获取设备列表
-        List<Device> deviceList = deviceMapper.getDeviceList(statusInt, keyword, offset, pageSize);
+        List<Device> deviceList = deviceMapper.getDeviceList(statusInt, keyword, type, offset, pageSize);
         // 获取设备总数
-        int total = deviceMapper.getDeviceCount(statusInt, keyword);
+        int total = deviceMapper.getDeviceCount(statusInt, keyword, type);
         // 转换为VO
         List<DeviceVO> deviceVOList = new ArrayList<>();
         for (Device device : deviceList) {

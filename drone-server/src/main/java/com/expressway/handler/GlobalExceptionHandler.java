@@ -1,8 +1,8 @@
 package com.expressway.handler;
 
+import com.expressway.exception.AuthException;
 import com.expressway.exception.BusinessException;
 import com.expressway.result.Result;
-import jakarta.security.auth.message.AuthException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;

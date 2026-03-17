@@ -15,11 +15,12 @@ public interface DeviceService {
      * 获取设备列表
      * @param keyword 搜索关键词
      * @param status 设备状态
+     * @param type 设备类型
      * @param page 页码
      * @param pageSize 每页数量
      * @return 设备列表
      */
-    com.expressway.result.PageResult<DeviceVO> getDeviceList(String keyword, String status, Integer page, Integer pageSize);
+    com.expressway.result.PageResult<DeviceVO> getDeviceList(String keyword, String status, String type, Integer page, Integer pageSize);
 
     /**
      * 获取设备详情
