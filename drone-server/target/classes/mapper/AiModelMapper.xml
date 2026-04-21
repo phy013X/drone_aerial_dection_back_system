@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.expressway.mapper.AiModelMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.expressway.entity.AiModel" >
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="version" property="version" />
+        <result column="type" property="type" />
+        <result column="description" property="description" />
+        <result column="model_path" property="modelPath" />
+        <result column="config_path" property="configPath" />
+        <result column="input_size" property="inputSize" />
+        <result column="batch_size" property="batchSize" />
+        <result column="confidence_threshold" property="confidenceThreshold" />
+        <result column="enabled" property="enabled" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <!-- 获取AI模型列表 -->
+    <select id="getAiModelList" resultMap="BaseResultMap">
+        select * from ai_model
+        <where>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="enabled != null">
+                and enabled = #{enabled}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <!-- 获取AI模型详情 -->
+    <select id="getAiModelById" resultMap="BaseResultMap">
+        select * from ai_model where id = #{id}
+    </select>
+
+    <!-- 创建AI模型 -->
+    <insert id="createAiModel">
+        insert into ai_model (name, version, type, description, model_path, config_path, input_size, batch_size, confidence_threshold, enabled, create_time, update_time)
+        values (#{name}, #{version}, #{type}, #{description}, #{modelPath}, #{configPath}, #{inputSize}, #{batchSize}, #{confidenceThreshold}, #{enabled}, now(), now())
+    </insert>
+
+    <!-- 更新AI模型 -->
+    <update id="updateAiModel">
+        update ai_model set
+            name = #{name},
+            version = #{version},
+            type = #{type},
+            description = #{description},
+            model_path = #{modelPath},
+            config_path = #{configPath},
+            input_size = #{inputSize},
+            batch_size = #{batchSize},
+            confidence_threshold = #{confidenceThreshold},
+            update_time = now()
+        where id = #{id}
+    </update>
+
+    <!-- 删除AI模型 -->
+    <delete id="deleteAiModel">
+        delete from ai_model where id = #{id}
+    </delete>
+
+    <!-- 启用/禁用AI模型 -->
+    <update id="enableAiModel">
+        update ai_model set
+            enabled = #{enabled},
+            update_time = now()
+        where id = #{id}
+    </update>
+</mapper>

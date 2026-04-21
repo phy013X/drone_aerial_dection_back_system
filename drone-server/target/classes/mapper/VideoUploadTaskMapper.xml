@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.expressway.mapper.VideoUploadTaskMapper">
+    <resultMap id="BaseResultMap" type="com.expressway.entity.VideoUploadTask">
+        <id column="id" property="id" />
+        <result column="upload_id" property="uploadId" />
+        <result column="video_id" property="videoId" />
+        <result column="file_name" property="fileName" />
+        <result column="file_size" property="fileSize" />
+        <result column="file_type" property="fileType" />
+        <result column="chunk_size" property="chunkSize" />
+        <result column="total_chunks" property="totalChunks" />
+        <result column="uploaded_chunks" property="uploadedChunks" />
+        <result column="status" property="status" />
+        <result column="progress" property="progress" />
+        <result column="error_message" property="errorMessage" />
+        <result column="upload_user_id" property="uploadUserId" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="complete_time" property="completeTime" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.expressway.entity.VideoUploadTask" useGeneratedKeys="true" keyProperty="id">
+        insert into video_upload_task (upload_id, video_id, file_name, file_size, file_type, chunk_size, total_chunks, uploaded_chunks, status, progress, upload_user_id)
+        values (#{uploadId}, #{videoId}, #{fileName}, #{fileSize}, #{fileType}, #{chunkSize}, #{totalChunks}, #{uploadedChunks}, #{status}, #{progress}, #{uploadUserId})
+    </insert>
+
+    <select id="selectByUploadId" resultMap="BaseResultMap">
+        select * from video_upload_task where upload_id = #{uploadId}
+    </select>
+
+    <update id="updateProgress">
+        update video_upload_task set progress = #{progress}, uploaded_chunks = #{uploadedChunks}, update_time = now()
+        where upload_id = #{uploadId}
+    </update>
+
+    <update id="updateStatus">
+        update video_upload_task set status = #{status}, error_message = #{errorMessage}, update_time = now()
+        <if test="status == 2 or status == 3">
+            , complete_time = now()
+        </if>
+        where upload_id = #{uploadId}
+    </update>
+
+    <update id="updateVideoId">
+        update video_upload_task set video_id = #{videoId}, update_time = now()
+        where upload_id = #{uploadId}
+    </update>
+
+    <delete id="deleteByUploadId">
+        delete from video_upload_task where upload_id = #{uploadId}
+    </delete>
+</mapper>

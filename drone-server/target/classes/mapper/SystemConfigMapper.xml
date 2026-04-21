@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.expressway.mapper.SystemConfigMapper">
+    
+    <resultMap id="SystemConfigResult" type="com.expressway.entity.SystemConfig">
+        <id property="id" column="id"/>
+        <result property="key" column="key"/>
+        <result property="value" column="value"/>
+        <result property="type" column="type"/>
+        <result property="description" column="description"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    
+    <select id="getConfigByKey" resultMap="SystemConfigResult">
+        SELECT id, key, value, type, description, create_time, update_time
+        FROM system_config
+        WHERE key = #{key}
+    </select>
+    
+    <select id="getAllConfigs" resultMap="SystemConfigResult">
+        SELECT id, key, value, type, description, create_time, update_time
+        FROM system_config
+        ORDER BY id
+    </select>
+    
+    <insert id="createConfig" parameterType="com.expressway.entity.SystemConfig">
+        INSERT INTO system_config (key, value, type, description, create_time, update_time)
+        VALUES (#{key}, #{value}, #{type}, #{description}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <update id="updateConfig" parameterType="com.expressway.entity.SystemConfig">
+        UPDATE system_config
+        SET value = #{value},
+            type = #{type},
+            description = #{description},
+            update_time = #{updateTime}
+        WHERE key = #{key}
+    </update>
+</mapper>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.expressway.mapper.AlertMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.expressway.entity.Alert" >
+        <id column="id" property="id" />
+        <result column="device_id" property="deviceId" />
+        <result column="type" property="type" />
+        <result column="level" property="level" />
+        <result column="message" property="message" />
+        <result column="detection_id" property="detectionId" />
+        <result column="image_url" property="imageUrl" />
+        <result column="latitude" property="latitude" />
+        <result column="longitude" property="longitude" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+        <result column="process_time" property="processTime" />
+        <result column="processor_id" property="processorId" />
+        <result column="process_note" property="processNote" />
+    </resultMap>
+
+    <!-- 关联查询结果映射 -->
+    <resultMap id="AlertWithDetailsResultMap" type="com.expressway.entity.Alert" extends="BaseResultMap">
+        <result column="device_name" property="deviceName" />
+        <result column="processor_name" property="processorName" />
+    </resultMap>
+
+    <!-- 创建告警 -->
+    <insert id="createAlert">
+        insert into alert (device_id, type, level, message, detection_id, image_url, latitude, longitude, status, create_time)
+        values (#{deviceId}, #{type}, #{level}, #{message}, #{detectionId}, #{imageUrl}, #{latitude}, #{longitude}, 1, now())
+    </insert>
+
+    <!-- 获取告警列表 -->
+    <select id="getAlertList" resultMap="AlertWithDetailsResultMap">
+        select a.*, de.name as device_name, u.name as processor_name from alert a
+        left join device de on a.device_id = de.id
+        left join user u on a.processor_id = u.id
+        <where>
+            <if test="level != null">
+                and a.level = #{level}
+            </if>
+            <if test="status != null">
+                and a.status = #{status}
+            </if>
+        </where>
+        order by a.create_time desc
+        limit #{page}, #{size}
+    </select>
+
+    <!-- 获取告警总数 -->
+    <select id="getAlertCount" resultType="java.lang.Integer">
+        select count(*) from alert
+        <where>
+            <if test="level != null">
+                and level = #{level}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!-- 获取告警详情 -->
+    <select id="getAlertById" resultMap="AlertWithDetailsResultMap">
+        select a.*, de.name as device_name, u.name as processor_name from alert a
+        left join device de on a.device_id = de.id
+        left join user u on a.processor_id = u.id
+        where a.id = #{id}
+    </select>
+
+    <!-- 处理告警 -->
+    <update id="processAlert">
+        update alert set
+            status = #{status},
+            process_time = #{processTime},
+            processor_id = #{processorId},
+            process_note = #{processNote}
+        where id = #{id}
+    </update>
+
+    <!-- 关闭告警 -->
+    <update id="closeAlert">
+        update alert set
+            status = #{status},
+            process_time = #{processTime},
+            processor_id = #{processorId}
+        where id = #{id}
+    </update>
+</mapper>

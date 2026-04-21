@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.expressway.mapper.VideoDetectionTaskMapper">
+    <resultMap id="BaseResultMap" type="com.expressway.entity.VideoDetectionTask">
+        <id column="id" property="id" />
+        <result column="video_id" property="videoId" />
+        <result column="model_type" property="modelType" />
+        <result column="confidence_threshold" property="confidenceThreshold" />
+        <result column="detect_classes" property="detectClasses" />
+        <result column="frame_interval" property="frameInterval" />
+        <result column="priority" property="priority" />
+        <result column="status" property="status" />
+        <result column="progress" property="progress" />
+        <result column="queue_position" property="queuePosition" />
+        <result column="total_frames" property="totalFrames" />
+        <result column="processed_frames" property="processedFrames" />
+        <result column="detection_count" property="detectionCount" />
+        <result column="current_fps" property="currentFps" />
+        <result column="average_inference_time" property="averageInferenceTime" />
+        <result column="result_summary" property="resultSummary" />
+        <result column="create_user_id" property="createUserId" />
+        <result column="create_time" property="createTime" />
+        <result column="start_time" property="startTime" />
+        <result column="end_time" property="endTime" />
+        <result column="error_message" property="errorMessage" />
+    </resultMap>
+
+    <resultMap id="TaskWithVideoResultMap" type="com.expressway.entity.VideoDetectionTask" extends="BaseResultMap">
+        <result column="video_name" property="videoName" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.expressway.entity.VideoDetectionTask" useGeneratedKeys="true" keyProperty="id">
+        insert into video_detection_task (video_id, model_type, confidence_threshold, detect_classes, frame_interval, priority, status, progress, create_user_id)
+        values (#{videoId}, #{modelType}, #{confidenceThreshold}, #{detectClasses}, #{frameInterval}, #{priority}, #{status}, #{progress}, #{createUserId})
+    </insert>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        select * from video_detection_task where id = #{id}
+    </select>
+
+    <select id="selectByVideoId" resultMap="TaskWithVideoResultMap">
+        select t.*, v.file_name as video_name
+        from video_detection_task t
+        left join video v on t.video_id = v.id
+        where t.video_id = #{videoId}
+        order by t.create_time desc
+        limit #{page}, #{size}
+    </select>
+
+    <select id="countByVideoId" resultType="java.lang.Integer">
+        select count(*) from video_detection_task where video_id = #{videoId}
+    </select>
+
+    <update id="updateStatus">
+        update video_detection_task set status = #{status}
+        <if test="status == 2">
+            , start_time = now()
+        </if>
+        <if test="status == 3 or status == 4 or status == 5">
+            , end_time = now()
+        </if>
+        where id = #{id}
+    </update>
+
+    <update id="updateProgress">
+        update video_detection_task set progress = #{progress}, processed_frames = #{processedFrames}, detection_count = #{detectionCount}, update_time = now()
+        where id = #{id}
+    </update>
+
+    <update id="updateTaskComplete">
+        update video_detection_task set status = #{status}, total_frames = #{totalFrames}, processed_frames = #{processedFrames}, detection_count = #{detectionCount}, result_summary = #{resultSummary}, end_time = now(), progress = 100
+        where id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from video_detection_task where id = #{id}
+    </delete>
+</mapper>

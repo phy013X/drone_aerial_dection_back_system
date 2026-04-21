@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.expressway.mapper.UserMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.expressway.entity.User" >
+        <id column="id" property="id" />
+        <result column="username" property="username" />
+        <result column="password" property="password" />
+        <result column="name" property="name" />
+        <result column="email" property="email" />
+        <result column="phone" property="phone" />
+        <result column="avatar" property="avatar" />
+        <result column="role_id" property="roleId" />
+        <result column="status" property="status" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="last_login_time" property="lastLoginTime" />
+    </resultMap>
+
+    <!-- 登录查询结果映射 -->
+    <resultMap id="LoginResultMap" type="com.expressway.entity.User" extends="BaseResultMap">
+        <result column="role_name" property="roleName" />
+    </resultMap>
+
+    <!-- 登录查询 -->
+    <select id="login" resultMap="LoginResultMap">
+        select u.*, r.name as role_name from user u
+        left join role r on u.role_id = r.id
+        where (u.username = #{userIdentifier} or u.email = #{userIdentifier} or u.phone = #{userIdentifier}) and u.status = 1
+    </select>
+
+    <!-- 根据用户名查询 -->
+    <select id="findByUsername" resultMap="BaseResultMap">
+        select * from user where username = #{username}
+    </select>
+
+    <!-- 根据邮箱查询 -->
+    <select id="findByEmail" resultMap="BaseResultMap">
+        select * from user where email = #{email}
+    </select>
+
+    <!-- 根据手机号查询 -->
+    <select id="findByPhone" resultMap="BaseResultMap">
+        select * from user where phone = #{phone}
+    </select>
+
+    <!-- 注册用户 -->
+    <insert id="register" useGeneratedKeys="true" keyProperty="id">
+        insert into user (username, password, name, email, phone, role_id, status, create_time, update_time)
+        values (#{username}, #{password}, #{name}, #{email}, #{phone}, #{roleId}, 1, now(), now())
+    </insert>
+
+    <!-- 更新最后登录时间 -->
+    <update id="updateLastLoginTime">
+        update user set last_login_time = now(), update_time = now() where id = #{id}
+    </update>
+
+    <!-- 根据ID查询用户 -->
+    <select id="selectById" resultMap="BaseResultMap">
+        select * from user where id = #{id}
+    </select>
+
+    <!-- 更新用户信息 -->
+    <update id="update">
+        update user
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="roleId != null">role_id = #{roleId},</if>
+            <if test="status != null">status = #{status},</if>
+            update_time = now()
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- 获取用户登录历史 -->
+    <select id="getLoginHistory" resultType="java.util.HashMap">
+        select id, user_id, username, ip, user_agent, create_time
+        from system_log
+        where user_id = #{userId} and operation = 'login'
+        order by create_time desc
+        limit #{offset}, #{limit}
+    </select>
+
+    <!-- 获取用户登录历史总数 -->
+    <select id="getLoginHistoryCount" resultType="java.lang.Integer">
+        select count(*) from system_log
+        where user_id = #{userId} and operation = 'login'
+    </select>
+
+    <!-- 获取用户操作日志 -->
+    <select id="getOperationLogs" resultType="java.util.HashMap">
+        select id, user_id, username, operation, module, method, ip, user_agent, execute_time, status, error_message, create_time
+        from system_log
+        where user_id = #{userId}
+        order by create_time desc
+        limit #{offset}, #{limit}
+    </select>
+
+    <!-- 获取用户操作日志总数 -->
+    <select id="getOperationLogsCount" resultType="java.lang.Integer">
+        select count(*) from system_log
+        where user_id = #{userId}
+    </select>
+</mapper>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.expressway.mapper.VideoDetectionResultMapper">
+    <resultMap id="BaseResultMap" type="com.expressway.entity.VideoDetectionResult">
+        <id column="id" property="id" />
+        <result column="task_id" property="taskId" />
+        <result column="frame_number" property="frameNumber" />
+        <result column="timestamp" property="timestamp" />
+        <result column="image_url" property="imageUrl" />
+        <result column="processed_image_url" property="processedImageUrl" />
+        <result column="detection_count" property="detectionCount" />
+        <result column="inference_time" property="inferenceTime" />
+        <result column="targets" property="targets" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+
+    <insert id="insert" parameterType="com.expressway.entity.VideoDetectionResult" useGeneratedKeys="true" keyProperty="id">
+        insert into video_detection_result (task_id, frame_number, timestamp, image_url, processed_image_url, detection_count, inference_time, targets)
+        values (#{taskId}, #{frameNumber}, #{timestamp}, #{imageUrl}, #{processedImageUrl}, #{detectionCount}, #{inferenceTime}, #{targets})
+    </insert>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        select * from video_detection_result where id = #{id}
+    </select>
+
+    <select id="selectByTaskId" resultMap="BaseResultMap">
+        select * from video_detection_result where task_id = #{taskId}
+        order by frame_number
+        limit #{page}, #{size}
+    </select>
+
+    <select id="selectByTaskIdAndFrameNumber" resultMap="BaseResultMap">
+        select * from video_detection_result where task_id = #{taskId} and frame_number = #{frameNumber}
+    </select>
+
+    <select id="countByTaskId" resultType="java.lang.Integer">
+        select count(*) from video_detection_result where task_id = #{taskId}
+    </select>
+
+    <delete id="deleteByTaskId">
+        delete from video_detection_result where task_id = #{taskId}
+    </delete>
+</mapper>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.expressway.mapper.DetectionMapper">
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.expressway.entity.Detection" >
+        <id column="id" property="id" />
+        <result column="device_id" property="deviceId" />
+        <result column="timestamp" property="timestamp" />
+        <result column="image_url" property="imageUrl" />
+        <result column="processed_image_url" property="processedImageUrl" />
+        <result column="latitude" property="latitude" />
+        <result column="longitude" property="longitude" />
+        <result column="altitude" property="altitude" />
+        <result column="detection_count" property="detectionCount" />
+        <result column="model_version" property="modelVersion" />
+        <result column="inference_time" property="inferenceTime" />
+        <result column="create_time" property="createTime" />
+    </resultMap>
+
+    <!-- 关联查询结果映射 -->
+    <resultMap id="DetectionWithDeviceResultMap" type="com.expressway.entity.Detection" extends="BaseResultMap">
+        <result column="device_name" property="deviceName" />
+    </resultMap>
+
+    <!-- 创建检测记录 -->
+    <insert id="createDetection">
+        insert into detection (device_id, timestamp, image_url, processed_image_url, latitude, longitude, altitude, detection_count, model_version, inference_time, create_time)
+        values (#{deviceId}, #{timestamp}, #{imageUrl}, #{processedImageUrl}, #{latitude}, #{longitude}, #{altitude}, #{detectionCount}, #{modelVersion}, #{inferenceTime}, now())
+    </insert>
+
+    <!-- 获取检测记录详情 -->
+    <select id="getDetectionById" resultMap="DetectionWithDeviceResultMap">
+        select d.*, de.name as device_name from detection d
+        left join device de on d.device_id = de.id
+        where d.id = #{id}
+    </select>
+
+    <!-- 获取检测历史记录 -->
+    <select id="getDetectionHistory" resultMap="DetectionWithDeviceResultMap">
+        select d.*, de.name as device_name from detection d
+        left join device de on d.device_id = de.id
+        left join detection_result dr on d.id = dr.detection_id
+        <where>
+            <if test="deviceId != null">
+                and d.device_id = #{deviceId}
+            </if>
+            <if test="startTime != null">
+                and d.timestamp >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and d.timestamp &lt;= #{endTime}
+            </if>
+            <if test="type != null">
+                and dr.type = #{type}
+            </if>
+        </where>
+        group by d.id
+        order by d.timestamp desc
+        limit #{page}, #{size}
+    </select>
+
+    <!-- 获取检测历史记录总数 -->
+    <select id="getDetectionHistoryCount" resultType="java.lang.Integer">
+        select count(distinct d.id) from detection d
+        left join detection_result dr on d.id = dr.detection_id
+        <where>
+            <if test="deviceId != null">
+                and d.device_id = #{deviceId}
+            </if>
+            <if test="startTime != null">
+                and d.timestamp >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and d.timestamp &lt;= #{endTime}
+            </if>
+            <if test="type != null">
+                and dr.type = #{type}
+            </if>
+        </where>
+    </select>
+
+    <!-- 创建检测结果 -->
+    <insert id="createDetectionResult">
+        insert into detection_result (detection_id, type, confidence, bbox_x, bbox_y, bbox_width, bbox_height, track_id)
+        values (#{detectionId}, #{type}, #{confidence}, #{bboxX}, #{bboxY}, #{bboxWidth}, #{bboxHeight}, #{trackId})
+    </insert>
+
+    <!-- 获取检测结果列表 -->
+    <select id="getDetectionResultsByDetectionId" resultType="com.expressway.entity.DetectionResult">
+        select * from detection_result where detection_id = #{detectionId}
+    </select>
+</mapper>
